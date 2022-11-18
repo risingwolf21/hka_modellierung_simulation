@@ -8,5 +8,8 @@ interpolationspolynom: interpolationspolynom.c
 #interpolationspolynom: interpolationspolynom.c
 #	gcc -Wall -O1 --std=gnu99 -o interpolationspolynom interpolationspolynom.c -lm
 
+run: 
+	./interpolationspolynom
+
 clean:
 	rm interpolationspolynom
