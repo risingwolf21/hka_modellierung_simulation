@@ -92,15 +92,41 @@ int main(int argc, char *argv[])
   {
     for (j = 0; j < i + 1; j++)
     {
-      
+      if (j == 0)
+      {
+        D[i][j] = y[i];
+      }
+      else if (j == 1)
+      {
+        D[i][j] = (y[i] - y[i - 1]) / (x[i] - x[i - 1]);
+      }
+      else
+      {
+        D[i][j] = (D[i][j - 1] - D[i - 1][j - 1]) / (x[i] - x[i - j]);
+      }
     }
-    printf("\n");
   }
 
   // Berechnen Sie die dividierten Differenzen:
 
   // Geben Sie hier die dividierten Differenzen in Form einer Matrix aus:
   printf("\n  Ausgabe der dividierten Differenzen D: \n");
+  int k, l;
+  for (k = 0; k < N; k++)
+  {
+    for (l = 0; l < k + 1; l++)
+    {
+      if (D[k][l] > 0)
+      {
+        printf(" %.5lf ", D[k][l]);
+      }
+      else
+      {
+        printf("%.5lf ", D[k][l]);
+      }
+    }
+    printf("\n");
+  }
 
   /*********************************************************************/
   /* Zu Erinnerung:                                                    */
@@ -115,8 +141,34 @@ int main(int argc, char *argv[])
   double a[N]; // Vektor der Länge N
 
   // Geben Sie das Polynom aus:
+  // f(x) = +a_0+a_1*(x-x0)+a_2*(x-x0)*(x-x1)+a_3*(x-x0)*(x-x1)*(x-x2)+a_4*(x-x0)*(x-x1)*(x-x2)*(x-x3)
+  // f(x) = +1.100000+-1.066667*(x-1.000000)+1.601852*(x-1.000000)*(x-2.500000)+-2.262346*(x-1.000000)*(x-2.500000)*(x-3.400000)+2.581930*(x-1.000000)*(x-2.500000)*(x-3.400000)*(x-4.000000)
+  int w;
+  printf("\nf(x) = ");
+  for (w = 0; w < N; w++)
+  {
+    a[w] = D[w][w];
+    printf("+a_%d ", w);
+    for (int x = 0; x < w; x++)
+    {
+      printf("*(x-x%d)", x);
+    }
+  }
 
-  int useplotter = 0;
+  printf("\nf(x) = ");
+  for (w = 0; w < N; w++)
+  {
+    a[w] = D[w][w];
+    printf("+%.5lf ", a[w]);
+    for (int y = 0; y < w; y++)
+    {
+      printf("*(x-%.5lf)", x[y]);
+    }
+  }
+
+  printf("\n");
+
+  int useplotter = 1;
 
   if (useplotter)
   {
@@ -133,7 +185,7 @@ int main(int argc, char *argv[])
       }
     }
     fprintf(gp, ";\n");
-    fprintf(gp, "plot f(x) lc 3 ti \"Interpolation\", \"input.dat\" lc 4 ps 3 lw 2 ti \"data\";\n");
+    fprintf(gp, "set terminal png size 400,300; set output 'xyz.png';plot f(x) lc 3 ti \"Interpolation\", \"input.dat\" lc 4 ps 3 lw 2 ti \"data\";\n");
 
     pclose(gp);
   }
