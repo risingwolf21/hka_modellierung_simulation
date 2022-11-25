@@ -31,11 +31,11 @@ double int_unter(double a, double b, long n, double (*f)(double))
 {
   double result = 0.0;
 
-  double step = n / (b - a);
+  double step = (b - a) / n;
 
   for (int i = 0; i < n - 1; i++)
   {
-    result = result + f(a + step * i);
+    result = result + f(a + (step * i));
   }
 
   return result * ((b - a) / n);
@@ -55,7 +55,7 @@ double int_mitte(double a, double b, long n, double (*f)(double))
   double result = 0.0;
   double h = (b - a) / n;
 
-  double step = n / (b - a);
+  double step = (b - a) / n;
 
   for (int i = 0; i < n - 1; i++)
   {
@@ -78,7 +78,7 @@ double int_ober(double a, double b, long n, double (*f)(double))
   double result = 0.0;
   double h = (b - a) / n;
 
-  double step = n / (b - a);
+  double step = (b - a) / n;
 
   for (int i = 0; i < n - 1; i++)
   {
@@ -100,7 +100,7 @@ double int_trapez(double a, double b, long n, double (*f)(double))
 {
   double h = (b - a) / n;
   double result = 0.0;
-  double step = n / (b - a);
+  double step = (b - a) / n;
   for (int i = 0; i < n - 1; i++)
   {
     result = result + (0.5 * (f(a + step * i) + f(a + step * (i + 1))) * h);
@@ -121,7 +121,7 @@ double int_simpson(double a, double b, long n, double (*f)(double))
 {
   double h = (b - a) / n;
   double result = 0.0;
-  double step = n / (b - a);
+  double step = (b - a) / n;
   for (int i = 0; i < n - 1; i++)
   {
     double x = a + step * i;
@@ -158,7 +158,14 @@ double bogenlaenge(double a, double b, long n, double (*f)(double))
 void findsteps(double a, double b, double (*f)(double), double integral(double, double, long, double (*)(double)), double real, double err)
 {
   int n = 0;
-  double error;
+  double error = 1;
+
+  while (error < err)
+  {
+    n++;
+    double result = integral(a, b, n, f);
+    error = fabs(result - real);
+  }
 
   printf("%6d Stützstellen, err=%le\n", n, error);
 }
@@ -176,22 +183,17 @@ int main(void)
   // b=2
 
   int n[6] = {4, 8, 16, 32, 64, 128};
-
+  printf("Stützstellen  h        Simpson       Trapez        Upper         Middle        Lower \n");
   for (int i = 0; i < 6; i++)
   {
     double h = (b - a) / n[i];
-    printf("STÜTZSTELLEN: %d \n", n[i]);
     double simpson = int_simpson(a, b, n[i], f);
     double trapez = int_trapez(a, b, n[i], f);
     double upper = int_ober(a, b, n[i], f);
     double middle = int_mitte(a, b, n[i], f);
     double lower = int_unter(a, b, n[i], f);
 
-    printf("SIMPSON:  %.10lf  => %.10lf\n", simpson, pow(h, 4));
-    printf("TRAPEZ:   %.10lf  => %.10lf\n", trapez, pow(h, 2));
-    printf("UPPER:    %.10lf  => %.10lf\n", upper, h);
-    printf("MIDDLE:   %.10lf  => %.10lf\n", middle, pow(h, 2));
-    printf("LOWER:    %.10lf  => %.10lf\n", lower, h);
+    printf("%d           %.5lf  %e  %e  %e  %e  %e \n", n[i], h, simpson, trapez, upper, middle, lower);
   }
 
   // f = f2;
