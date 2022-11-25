@@ -103,89 +103,85 @@ int main(int argc, char *argv[])
                       {0.0, 0.0}};
   double ATA_INV[2][2] = {{0.0, 0.0},
                           {0.0, 0.0}};
-  double ATlogI[2] = {0.0, 0.0};
+  double ATy[2] = {0.0, 0.0};
 
-  double A[2][N - 1];
-  double AT[N - 1][2];
+  double A[2][N];
+  double AT[N][2];
 
-  for (int j = 0; j < N - 1; j++)
+  for (int j = 0; j < N; j++)
   {
-    A[0][j] = t[j] - t_0;
-    A[1][j] = 1;
+    A[1][j] = t[j] - t_0;
+    A[0][j] = 1;
 
-    AT[j][1] = 1;
-    AT[j][0] = t[j] - t_0;
+    AT[j][1] = t[j] - t_0;
+    AT[j][0] = 1;
+
+    // printf("%.0lf %.0lf\n", A[0][j], A[1][j]);
   }
 
-  double ATlogI1 = 0.0;
-  double ATlogI0 = 0.0;
-  for (int x = 0; x < N; x++)
+  // for (int j = 0; j < N; j++)
+  // {
+  //   printf("%.0lf ", AT[j][0]);
+  // }
+  // printf("\n");
+  // for (int j = 0; j < N; j++)
+  // {
+  //   printf("%.0lf ", AT[j][1]);
+  // }
+  // printf("\n");
+
+  // for (int j = 0; j < N; j++)
+  // {
+  //   printf("%.5lf \n", logI[j]);
+  // }
+
+  for (int j = 0; j < N; j++)
   {
-    ATlogI0 = ATlogI0 + (logI[x] * AT[x][0]);
-    ATlogI1 = ATlogI1 + (logI[x] * 1);
+    ATy[0] += AT[j][0] * logI[j];
+    ATy[1] += AT[j][1] * logI[j];
   }
-  ATlogI[0] = ATlogI0;
-  ATlogI[1] = ATlogI1;
 
   for (int x = 0; x < 2; x++)
   {
     for (int y = 0; y < 2; y++)
     {
-      double temp = 0;
-      for (int q = 0; q < N - 1; q++)
+      for (int q = 0; q < N; q++)
       {
-        temp = temp + (AT[q][y] * A[x][q]);
+        ATA[x][y] += (AT[q][y] * A[x][q]);
       }
-      ATA[x][y] = temp;
     }
-  }
-  printf("A Matrix: \n");
-  for (int q = 0; q < N - 1; q++)
-  {
-    printf("%.5lf %.5lf \n", A[0][q], A[1][q]);
-  }
-
-  printf("AT Matrix: \n");
-  for (int q = 0; q < N - 1; q++)
-  {
-    printf("%.5lf ", AT[q][0]);
-  }
-  printf("\n");
-  for (int q = 0; q < N - 1; q++)
-  {
-    printf("%.5lf ", AT[q][1]);
   }
 
   printf("\nATA Matrix: \n");
-  printf("%.5lf %.5lf \n", ATA[0][0], ATA[0][1]);
-  printf("%.5lf %.5lf \n", ATA[1][0], ATA[1][1]);
+  printf("%e %e \n", ATA[0][0], ATA[0][1]);
+  printf("%e %e \n", ATA[1][0], ATA[1][1]);
 
   // Invertierung von ATA (wegen kleiner Groesse)
   double det = ATA[0][0] * ATA[1][1] - ATA[1][0] * ATA[0][1];
-  ATA_INV[0][0] = ATA[1][1] / det;      // a
-  ATA_INV[1][0] = ATA[1][0] / det * -1; // b
-  ATA_INV[0][1] = ATA[0][1] / det * -1; // c
-  ATA_INV[1][1] = ATA[0][0] / det;      // d
+  ATA_INV[0][0] = ATA[1][1] / det;
+  ATA_INV[1][0] = ATA[1][0] / det * -1;
+  ATA_INV[0][1] = ATA[0][1] / det * -1;
+  ATA_INV[1][1] = ATA[0][0] / det;
 
   printf("\nATA Inv Matrix: \n");
-  printf("%.5lf %.5lf \n", ATA_INV[0][0], ATA_INV[0][1]);
-  printf("%.5lf %.5lf \n", ATA_INV[1][0], ATA_INV[1][1]);
+  printf("%e %e \n", ATA_INV[0][0], ATA_INV[0][1]);
+  printf("%e %e \n", ATA_INV[1][0], ATA_INV[1][1]);
+
+  printf("\nATy Matrix:\n");
+  printf("%e\n", ATy[0]);
+  printf("%e\n", ATy[1]);
 
   // Ermittlung von ln(a) und b aus ATA^{-1} und ATy
+  // delta = ATy * ATA^-1
 
-  // ATA * delta = ATlogI
-  // delta = (ln(a),b)^T
-  //  (ln(a))    (ATAlogI[0]) (ATA_INV[0][0] ATA_INV[0][1])
-  //           =
-  //  ( b   )    (ATAlogI[0]) (ATA_INV[1][0] ATA_INV[1][1])
-
-  double ln_a = ATA_INV[0][0] * ATlogI[0] + ATA_INV[1][0] * ATlogI[0];
-  double b = ATA_INV[0][1] * ATlogI[1] + ATA_INV[1][1] * ATlogI[1];
+  double ln_a = ATA_INV[0][0] * ATy[0] + ATA_INV[1][0] * ATy[1];
+  double b = ATA_INV[0][1] * ATy[0] + ATA_INV[1][1] * ATy[1];
 
   // Bestimmung von a selbst
   double a = exp(ln_a);
 
-  printf(" a = %.5lf , b = %.5lf", ln_a, b);
+  printf("\nln_a = %e\n", ln_a);
+  printf("b = %e\n", b);
 
   // Plotten wenn plotflag!=0
   long plotflag = 1;
@@ -196,7 +192,7 @@ int main(int argc, char *argv[])
     fprintf(gp, "reset; set key left top box; set xlabel \"t - t_0\";\n"
                 "set ylabel \"y\";\n"
                 "set autoscale fix\n"
-                //"set logscale xy\n"
+                "set logscale xy\n"
                 " f(t) = %le*exp(%le*(t - 23));\n "
                 "set terminal png size 1400,1300; set output 'xyz.png';plot f(x) lt -1 lw 2, \"input.dat\" using 1:2 pt 7 title 'measured data';\n", // lt: LineType, lw: Linewidth, using 1:2: zweite spalte verwenden
             a, b);

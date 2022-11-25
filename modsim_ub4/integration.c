@@ -12,7 +12,10 @@
 
 double f1(double x)
 {
-  return sic(x);
+  if (x == 0)
+    return 1;
+
+  return sin(x) / x;
 }
 
 /**
@@ -56,7 +59,7 @@ double int_mitte(double a, double b, long n, double (*f)(double))
 
   for (int i = 0; i < n - 1; i++)
   {
-    result = result + f(0.5 * ((a + step * (i + 1)), a + step * i));
+    result = result + f(0.5 * ((a + step * (i + 1)) + (a + step * i)));
   }
   return result * h;
 }
@@ -116,7 +119,16 @@ double int_trapez(double a, double b, long n, double (*f)(double))
 
 double int_simpson(double a, double b, long n, double (*f)(double))
 {
-  
+  double h = (b - a) / n;
+  double result = 0.0;
+  double step = n / (b - a);
+  for (int i = 0; i < n - 1; i++)
+  {
+    double x = a + step * i;
+    double xi = a + step * (i + 1);
+    result = result + (f(x) + 4 * f((x + xi) / 2) + f(xi));
+  }
+  return result * (h / 6);
 }
 
 /**
@@ -153,7 +165,6 @@ void findsteps(double a, double b, double (*f)(double), double integral(double, 
 
 int main(void)
 {
-  int n;
   double real;
   double a = 0.0;
   double b = 2.0;
@@ -161,7 +172,27 @@ int main(void)
 
   // Sie können f benutzen und an dieser Stelle abändern wenn Sie fb haben wollen
   f = f1;
-  real = 1.6054129768026948485767201; // b=2
+  real = 1.6054129768026948485767201;
+  // b=2
+
+  int n[6] = {4, 8, 16, 32, 64, 128};
+
+  for (int i = 0; i < 6; i++)
+  {
+    double h = (b - a) / n[i];
+    printf("STÜTZSTELLEN: %d \n", n[i]);
+    double simpson = int_simpson(a, b, n[i], f);
+    double trapez = int_trapez(a, b, n[i], f);
+    double upper = int_ober(a, b, n[i], f);
+    double middle = int_mitte(a, b, n[i], f);
+    double lower = int_unter(a, b, n[i], f);
+
+    printf("SIMPSON:  %.10lf  => %.10lf\n", simpson, pow(h, 4));
+    printf("TRAPEZ:   %.10lf  => %.10lf\n", trapez, pow(h, 2));
+    printf("UPPER:    %.10lf  => %.10lf\n", upper, h);
+    printf("MIDDLE:   %.10lf  => %.10lf\n", middle, pow(h, 2));
+    printf("LOWER:    %.10lf  => %.10lf\n", lower, h);
+  }
 
   // f = f2;
   // real = exp(b)- exp(a);
