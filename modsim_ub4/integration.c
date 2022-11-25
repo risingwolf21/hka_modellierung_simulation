@@ -10,9 +10,10 @@
  * @return f(x)
  */
 
-double f1(double x) {
+double f1(double x)
+{
+  return sic(x);
 }
-
 
 /**
  * @brief Integration von f mit Untersummen.
@@ -23,7 +24,18 @@ double f1(double x) {
  * @param f zu integrierende Funktion
  */
 
-double int_unter(double a, double b, long n, double (*f)(double)) {
+double int_unter(double a, double b, long n, double (*f)(double))
+{
+  double result = 0.0;
+
+  double step = n / (b - a);
+
+  for (int i = 0; i < n - 1; i++)
+  {
+    result = result + f(a + step * i);
+  }
+
+  return result * ((b - a) / n);
 }
 
 /**
@@ -35,7 +47,18 @@ double int_unter(double a, double b, long n, double (*f)(double)) {
  * @param f zu integrierende Funktion
  */
 
-double int_mitte(double a, double b, long n, double (*f)(double)) {
+double int_mitte(double a, double b, long n, double (*f)(double))
+{
+  double result = 0.0;
+  double h = (b - a) / n;
+
+  double step = n / (b - a);
+
+  for (int i = 0; i < n - 1; i++)
+  {
+    result = result + f(0.5 * ((a + step * (i + 1)), a + step * i));
+  }
+  return result * h;
 }
 
 /**
@@ -47,7 +70,18 @@ double int_mitte(double a, double b, long n, double (*f)(double)) {
  * @param f zu integrierende Funktion
  */
 
-double int_ober(double a, double b, long n, double (*f)(double)) {
+double int_ober(double a, double b, long n, double (*f)(double))
+{
+  double result = 0.0;
+  double h = (b - a) / n;
+
+  double step = n / (b - a);
+
+  for (int i = 0; i < n - 1; i++)
+  {
+    result = result + f(a + step * (i + 1));
+  }
+  return result * h;
 }
 
 /**
@@ -59,7 +93,16 @@ double int_ober(double a, double b, long n, double (*f)(double)) {
  * @param f zu integrierende Funktion
  */
 
-double int_trapez(double a, double b, long n, double (*f)(double)) {
+double int_trapez(double a, double b, long n, double (*f)(double))
+{
+  double h = (b - a) / n;
+  double result = 0.0;
+  double step = n / (b - a);
+  for (int i = 0; i < n - 1; i++)
+  {
+    result = result + (0.5 * (f(a + step * i) + f(a + step * (i + 1))) * h);
+  }
+  return result;
 }
 
 /**
@@ -71,8 +114,9 @@ double int_trapez(double a, double b, long n, double (*f)(double)) {
  * @param f zu integrierende Funktion
  */
 
-double int_simpson(double a, double b, long n, double (*f)(double)) {
-
+double int_simpson(double a, double b, long n, double (*f)(double))
+{
+  
 }
 
 /**
@@ -84,7 +128,8 @@ double int_simpson(double a, double b, long n, double (*f)(double)) {
  * @param f zu integrierende Funktion
  */
 
-double bogenlaenge(double a, double b, long n, double (*f)(double)) {
+double bogenlaenge(double a, double b, long n, double (*f)(double))
+{
 }
 
 /**
@@ -97,15 +142,17 @@ double bogenlaenge(double a, double b, long n, double (*f)(double)) {
  * @param real     analytische Lösung
  * @param err      Fehlertoleranz
  */
- 
-void findsteps(double a, double b, double (*f)(double), double integral(double, double, long, double (*)(double)), double real, double err) {
+
+void findsteps(double a, double b, double (*f)(double), double integral(double, double, long, double (*)(double)), double real, double err)
+{
   int n = 0;
   double error;
 
   printf("%6d Stützstellen, err=%le\n", n, error);
 }
 
-int main(void) {
+int main(void)
+{
   int n;
   double real;
   double a = 0.0;
@@ -116,16 +163,15 @@ int main(void) {
   f = f1;
   real = 1.6054129768026948485767201; // b=2
 
-  //f = f2;
-  //real = exp(b)- exp(a);
+  // f = f2;
+  // real = exp(b)- exp(a);
 
   // #double unter = int_unter(a, b, n, f);
   // #printf("%6lf (% .4le)\n", unten, real - unter);
 
   double err = 1e-3;
 
-  findsteps(a, b, f, int_unter,   real, err);
-
+  findsteps(a, b, f, int_unter, real, err);
 
   return 0;
 }

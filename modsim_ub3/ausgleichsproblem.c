@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
     fprintf(gp, "reset; set key left top box; set xlabel \"t - t_0\";\n"
                 "set ylabel \"y\";\n"
                 "set autoscale fix\n"
-                "set logscale xy\n"
+                //"set logscale xy\n"
                 " f(t) = %le*exp(%le*(t - 23));\n "
                 "set terminal png size 1400,1300; set output 'xyz.png';plot f(x) lt -1 lw 2, \"input.dat\" using 1:2 pt 7 title 'measured data';\n", // lt: LineType, lw: Linewidth, using 1:2: zweite spalte verwenden
             a, b);
