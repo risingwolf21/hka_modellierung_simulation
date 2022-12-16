@@ -161,12 +161,21 @@ int main() {
 
   for (int i = 1; i < NX-1; i++) {
     f[i  ] = WAERMEQUELLE;
+    d[i  ] = 2 / pow(DELTA_X, 2);
+    b[i  ] = -1 / pow(DELTA_X, 2);
+    c[i  ] = -1 / pow(DELTA_X, 2);
   }
   // Randbedingungen am rechten Rand
 
-  
+  d[NX-1] = 1;
+  b[NX-2] = 0;
+  c[NX-2] = -1 / pow(DELTA_X, 2);
 
   // 1. Variante Randbedingung links
+
+  d[0] = 1; // Diskretisierung von dT / dx = q an der Stelle 0.5 delta X mit T0 und T1
+  b[0] = 1;
+  c[0] = 1;
 
   printTridiagonalMatrix(b, d, c, NX);
   solveTridiagonalSystem(b, d, c, T, f, NX);
