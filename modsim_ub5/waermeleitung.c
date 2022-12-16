@@ -164,6 +164,8 @@ int main() {
   }
   // Randbedingungen am rechten Rand
 
+  
+
   // 1. Variante Randbedingung links
 
   printTridiagonalMatrix(b, d, c, NX);

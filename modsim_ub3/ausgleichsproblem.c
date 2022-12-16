@@ -74,6 +74,11 @@ void readFile(char *name, int t[], double I[])
   fclose(fp);
 }
 
+double f(double x, double b, double a)
+{
+  return b * exp(a * (x - 23));
+}
+
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
 
@@ -185,11 +190,18 @@ int main(int argc, char *argv[])
 
   // Plotten wenn plotflag!=0
   long plotflag = 1;
+  double result = 0;
+  for (int i = 0; i < N; i++)
+  {
+    result += pow(I[i] - f(t[i], a, b), 2);
+  }
+
+  printf("Error functional: %.5lf", result);
 
   if (plotflag)
   {
     FILE *gp = popen("gnuplot -p", "w");
-    fprintf(gp, "reset; set key left top box; set xlabel \"t - t_0\";\n"
+    printf(gp, "reset; set key left top box; set xlabel \"t - t_0\";\n"
                 "set ylabel \"y\";\n"
                 "set autoscale fix\n"
                 "set logscale xy\n"

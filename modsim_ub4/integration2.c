@@ -13,8 +13,9 @@
 double f1(double x)
 {
   if (x == 0)
-    return 1;
-
+  {
+    return 0;
+  }
   return sin(x) / x;
 }
 
@@ -34,16 +35,13 @@ double f2(double x)
 
 double int_unter(double a, double b, long n, double (*f)(double))
 {
-  double result = 0.0;
-
-  double step = (b - a) / n;
-
+  double h = (b - a) / n;
+  double sum = 0;
   for (int i = 0; i < n; i++)
   {
-    result = result + f(a + (step * i));
+    sum += f(a + i * h);
   }
-
-  return result * ((b - a) / n);
+  return h * sum;
 }
 
 /**
@@ -57,16 +55,17 @@ double int_unter(double a, double b, long n, double (*f)(double))
 
 double int_mitte(double a, double b, long n, double (*f)(double))
 {
-  double result = 0.0;
   double h = (b - a) / n;
-
-  double step = (b - a) / n;
+  double intervalmitte = 0.0;
+  double sum = 0.0;
 
   for (int i = 0; i < n; i++)
   {
-    result += f(0.5 * ((a + step * (i + 1)) + (a + step * i)));
+    intervalmitte = 0.5 * ((a + (i + 1) * h) + (a + i * h));
+    sum += f(intervalmitte);
   }
-  return result * h;
+
+  return h * sum;
 }
 
 /**
@@ -80,14 +79,14 @@ double int_mitte(double a, double b, long n, double (*f)(double))
 
 double int_ober(double a, double b, long n, double (*f)(double))
 {
-  double result = 0.0;
-  double step = (b - a) / n;
+  double h = (b - a) / n;
+  double sum = 0.0;
 
   for (int i = 0; i < n; i++)
   {
-    result += f(a + step * (i + 1));
+    sum += f(a + (i + 1) * h);
   }
-  return result * step;
+  return h * sum;
 }
 
 /**
@@ -101,14 +100,7 @@ double int_ober(double a, double b, long n, double (*f)(double))
 
 double int_trapez(double a, double b, long n, double (*f)(double))
 {
-  double h = (b - a) / n;
-  double result = 0.0;
-  double step = (b - a) / n;
-  for (int i = 0; i < n; i++)
-  {
-    result = result + (0.5 * (f(a + step * i) + f(a + step * (i + 1))) * h);
-  }
-  return result;
+  return 0.5 * (int_unter(a, b, n, f) + int_ober(a, b, n, f));
 }
 
 /**
@@ -123,15 +115,18 @@ double int_trapez(double a, double b, long n, double (*f)(double))
 double int_simpson(double a, double b, long n, double (*f)(double))
 {
   double h = (b - a) / n;
-  double result = 0.0;
-  double step = (b - a) / n;
+  double sum = 0.0;
+
   for (int i = 0; i < n; i++)
   {
-    double x = a + step * i;
-    double xi = a + step * (i + 1);
-    result += (h / 6.0) * (f(x) + 4 * f((x + xi) / 2) + f(xi));
+    double xi = a + i * h;
+    double xi1 = a + (i + 0.5) * h;
+    double xi2 = a + (i + 1) * h;
+
+    sum += (h / 6.0) * (f(xi) + 4 * f(xi1) + f(xi2));
   }
-  return result * (h / 6);
+
+  return sum;
 }
 
 /**
@@ -145,19 +140,16 @@ double int_simpson(double a, double b, long n, double (*f)(double))
 
 double bogenlaenge(double a, double b, long n, double (*f)(double))
 {
-  double h = (b - a) / n;
-  double result = 0.0;
+  double h = ((b - a) / n);
+  double length = 0;
 
-  for (int i = 0; i < n - 1; i++)
-  {
-    double x1 = a + (h * i);
-    double x2 = a + (h * (i + 1));
-    double y1 = f(x1);
-    double y2 = f(x2);
-
-    result += sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+  for(int i = 0; i < n; i++){
+    double xi = a + i * h;
+    double xi1 = a + (i+1) * h; 
+    length += sqrt(pow(h, 2) + pow((f(xi1) - f(xi)), 2));
   }
-  return result;
+
+  return length;
 }
 
 /**
@@ -171,23 +163,23 @@ double bogenlaenge(double a, double b, long n, double (*f)(double))
  * @param err      Fehlertoleranz
  */
 
-void findsteps(double a, double b, double (*f)(double), double integral(double, double, long, double (*)(double)), double real, double err)
+void findsteps(double a, double b, double (f)(double), double integral(double, double, long, double (*f)(double)), double real, double err)
 {
   int n = 0;
-  double error = 0;
+  double error;
 
   do
   {
     n++;
-    double result = integral(a, b, n, f);
-    error = fabs(result - real);
-  } while (error > err);
+    error = real - integral(a, b, n, f);
+  } while (fabs(error) >= err);
 
   printf("%6d Stützstellen, err=%le\n", n, error);
 }
 
 int main(void)
 {
+  int n;
   double real;
   double a = 0.0;
   double b = 2.0;
@@ -197,40 +189,52 @@ int main(void)
   f = f1;
   real = 1.6054129768026948485767201; // b=2
 
-  int n[6] = {4, 8, 16, 32, 64, 128};
-  for (int i = 0; i < 6; i++)
+  // f = f2;
+  //  real = exp(b)- exp(a);
+  
+  for (n = 4; n <= 128; n = n * 2)
   {
-    double h = (b - a) / n[i];
-    double simpson = int_simpson(a, b, n[i], f);
-    double trapez = int_trapez(a, b, n[i], f);
-    double upper = int_ober(a, b, n[i], f);
-    double middle = int_mitte(a, b, n[i], f);
-    double lower = int_unter(a, b, n[i], f);
+    double unten = int_unter(a, b, n, f);
+    double mitte = int_mitte(a, b, n, f);
+    double oben = int_ober(a, b, n, f);
+    double trapez = int_trapez(a, b, n, f);
+    double simpson = int_simpson(a, b, n, f);
 
-    printf("Stützstellen  h        Simpson       Trapez        Upper         Middle        Lower \n");
-    printf("%d           %.5lf  %e  %e  %e  %e  %e \n", n[i], h, simpson, trapez, upper, middle, lower);
-    printf("%d           %.5lf  %e  %e  %e  %e  %e \n", n[i], h, (real - simpson), (real - trapez), (real - upper), (real - middle), (real - lower));
+    printf("Stützstellen   h        Simpson  Trapez   Oben     Mitte    Unten\n");
+    printf("%.03d            %.6lf %.6lf %.6lf %.6lf %.6lf %.6lf\n", n, ((b - a) / n), simpson, trapez, oben, mitte, unten);
+    printf("%.03d            %.6lf %.6lf %.6lf %.6lf %.6lf %.6lf\n\n\n", n, ((b - a) / n), real - simpson, real - trapez, real - oben, real - mitte, real - unten);
   }
 
-  // f = f2;
-  // real = exp(b)- exp(a);
+  double err = 1e-3;
 
-  // #double unter = int_unter(a, b, n, f);
-  // #printf("%6lf (% .4le)\n", unten, real - unter);
+  printf("\n Rechteck Untere Summe: \n");
+  findsteps(a, b, f, int_unter, real, err);
+  printf("\n Rechteck Mittlere Summe: \n");
+  findsteps(a, b, f, int_mitte, real, err);
+  printf("\n Rechteck Obere Summe: \n");
+  findsteps(a, b, f, int_ober, real, err);
+  printf("\n Trapez Summe: \n");
+  findsteps(a, b, f, int_trapez, real, err);
+  printf("\n Simpson Summe: \n");
+  findsteps(a, b, f, int_simpson, real, err);
 
+  printf("\n\n");
   for (int i = 3; i < 9; i++)
   {
-    double err = exp(-i);
-    printf("Simpson: \n");
-    findsteps(a, b, f, int_simpson, real, err);
-    printf("Trapez: \n");
-    findsteps(a, b, f, int_trapez, real, err);
-    printf("Mittelsumme: \n");
+    err = exp(-i);
+
+    printf("\ne^-%02d:\n", i);
+
+    printf("\n Rechteck Mittlere Summe: \n");
     findsteps(a, b, f, int_mitte, real, err);
+    printf("\n Rechteck Obere Summe: \n");
+    findsteps(a, b, f, int_ober, real, err);
+    printf("\n Simpson Summe: \n");
+    findsteps(a, b, f, int_simpson, real, err);
   }
 
-  double bogenlaengeresult = bogenlaenge(0, 2, 100, f2);
-  printf("Bogenlänge: %.5lf \n", bogenlaengeresult);
-
+  printf("\n Bogenlänge: \n");
+  double bogenlaengeValue = bogenlaenge(a, b, n, f2);;
+  printf(" %.6lf \n", bogenlaengeValue);
   return 0;
 }
