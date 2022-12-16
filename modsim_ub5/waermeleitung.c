@@ -162,26 +162,30 @@ int main() {
   for (int i = 1; i < NX-1; i++) {
     f[i  ] = WAERMEQUELLE;
     d[i  ] = 2 / pow(DELTA_X, 2);
-    b[i  ] = -1 / pow(DELTA_X, 2);
     c[i  ] = -1 / pow(DELTA_X, 2);
   }
+  for(int i = 0; i < NX-2; i++){
+    b[i  ] = -1 / pow(DELTA_X, 2);
+  }
   // Randbedingungen am rechten Rand
-
+  f[NX-1] = T_OFEN;
   d[NX-1] = 1;
   b[NX-2] = 0;
-  c[NX-2] = -1 / pow(DELTA_X, 2);
 
   // 1. Variante Randbedingung links
-
-  d[0] = 1; // Diskretisierung von dT / dx = q an der Stelle 0.5 delta X mit T0 und T1
-  b[0] = 1;
-  c[0] = 1;
+  f[0] = WAERMEFLUSS;
+  d[0] = -1 / DELTA_X;
+  c[0] = 1 / DELTA_X;
 
   printTridiagonalMatrix(b, d, c, NX);
   solveTridiagonalSystem(b, d, c, T, f, NX);
   printf("Fehler erste variante |T_1 - T_exakt|: %e\n", calcNormDiffT(T, NX));
 
   // 2. Variante Randbedingung links
+
+  f[0] = WAERMEQUELLE - (WAERMEFLUSS / (DELTA_X/2.0));
+  d[0] = (1.0/((DELTA_X*DELTA_X)/2));
+  c[0] = -(1.0/((DELTA_X*DELTA_X)/2));
 
   printTridiagonalMatrix(b, d, c, NX);
   solveTridiagonalSystem(b, d, c, T, f, NX);
@@ -198,6 +202,12 @@ int main() {
   double *Tneu = (double*)calloc(NX, sizeof(double));
 
   // Anfangsbedingung
+
+  T[0] = T[1] - WAERMEFLUSS * DELTA_X;
+  T[NX-1] = T_OFEN;
+  for(int i = 1; i < NX-1; i++) {
+    T[i] = WAERMEQUELLE;
+  }
 
   for (int t = 0; t*DELTA_T < time + 1; t++) {
    
@@ -219,7 +229,7 @@ int main() {
   free(Tneu);
   fclose(heatfile);
 
-  long plotflag = 0;
+  long plotflag = 1;
 
   if (plotflag) {
     char plotbefehl[1000];
