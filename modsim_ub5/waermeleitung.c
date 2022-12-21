@@ -142,10 +142,23 @@ void calc(double* Tneu, double* T) {
   int NX = (int)L/DELTA_X+1; 
   Tneu[NX-1] = T_OFEN;
 
+  // Tneu = u^(n+1)
+  // T = u^n
+  // u_i^(n+1) = u_i^n + DELTA_T * ((u_i+1^n - 2*u_i^n + u_i-1^n)/DELTA_X^2)
+  //Das finite Differenzenverfahren heißt explizit in der Zeit, da das
+  //näachste Zeitupdate (n + 1) durch eine explizite Formel aus den
+  //vorangehenden Zeitschritten (n) bestimmt wird.
+
   for(int i = NX-2; i >= 1; i--){
-    Tneu[i] = T[i] + DELTA_T * (T[i+1] - 2*T[i] + T[i-1])/(DELTA_X*DELTA_X);
+    Tneu[i] = T[i] + DELTA_T * ((T[i+1] - 2*T[i] + T[i-1])/(DELTA_X*DELTA_X));
   }
 
+  // Vorwärtsdifferenz
+  // (f(x_0 + h) - f(x_0)) / h
+  // h = DELTA_X
+  // x_0 = 0
+  // => (T1 - T0)/DELTA_X = WAERMEFLUSS
+  // => T0 = T1 - WAERMEFLUSS * DELTA_X
   Tneu[0] = T[1] - WAERMEFLUSS * DELTA_X;
 }
 
@@ -245,8 +258,9 @@ int main() {
                      "set xlabel \"Raum\";\n"
                      "set ylabel \"Zeit\";\n"
                      "set zlabel \"Temperatur\";\n"
+                     "set output 'xyz.png';\n"
                      "splot \"heat.dat\"  every 1 w l lt 7 notitle;\n"
-                     "' | gnuplot -persist");
+                     "' | gnuplot");
     system(plotbefehl);
   }
   return 0;
