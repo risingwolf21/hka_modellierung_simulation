@@ -141,6 +141,12 @@ double calcNormDiffT(double* T, int N) {
 void calc(double* Tneu, double* T) {
   int NX = (int)L/DELTA_X+1; 
   Tneu[NX-1] = T_OFEN;
+
+  for(int i = NX-2; i >= 1; i--){
+    Tneu[i] = T[i] + DELTA_T * (T[i+1] - 2*T[i] + T[i-1])/(DELTA_X*DELTA_X);
+  }
+
+  Tneu[0] = T[1] - WAERMEFLUSS * DELTA_X;
 }
 
 int main() {
